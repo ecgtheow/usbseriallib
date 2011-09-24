@@ -4,7 +4,10 @@ import java.util.ArrayList;
 
 public class PL2303Descriptor extends UsbSerialDeviceDescriptor {
 
-	private ArrayList<UsbDeviceId> id_table = new ArrayList<UsbDeviceId>() {{
+	private ArrayList<UsbDeviceId> id_table = new ArrayList<UsbDeviceId>() {
+		private static final long serialVersionUID = 615147424349140335L; /* Shut eclipse up */
+
+	{
 		add(new UsbDeviceId(0x067b, 0x2303)); /* Prolific PL2303 */
 		add(new UsbDeviceId(0x067b, 0x04bb)); /* Prolific RSAQ2 */
 		add(new UsbDeviceId(0x067b, 0x1234)); /* Prolific DCU11 */

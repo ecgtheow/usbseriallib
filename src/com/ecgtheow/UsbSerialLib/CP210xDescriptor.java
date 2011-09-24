@@ -4,7 +4,10 @@ import java.util.ArrayList;
 
 public class CP210xDescriptor extends UsbSerialDeviceDescriptor {
 
-	private ArrayList<UsbDeviceId> id_table = new ArrayList<UsbDeviceId>() {{
+	private ArrayList<UsbDeviceId> id_table = new ArrayList<UsbDeviceId>() {
+		private static final long serialVersionUID = 5850817040061240265L; /* Shut eclipse up */
+
+	{
         add(new UsbDeviceId(0x045B, 0x0053)); /* Renesas RX610 RX-Stick */
         add(new UsbDeviceId(0x0471, 0x066A)); /* AKTAKOM ACE-1001 cable */
         add(new UsbDeviceId(0x0489, 0xE000)); /* Pirelli Broadband S.p.A, DP-L10 SIP/GSM Mobile */
