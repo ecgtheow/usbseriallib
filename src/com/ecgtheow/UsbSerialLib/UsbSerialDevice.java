@@ -40,6 +40,16 @@ public abstract class UsbSerialDevice implements Runnable {
 		}
 		return null;
 	}
+	
+	public static boolean knownDevice(UsbDevice device) {
+		for(UsbSerialDeviceDescriptor driver_descriptor : devices) {
+			if(driver_descriptor.knownDevice(device.getVendorId(), device.getProductId())) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
 
 	public UsbDevice getDevice() {
 		return device;
