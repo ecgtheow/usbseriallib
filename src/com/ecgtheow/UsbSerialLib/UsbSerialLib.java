@@ -67,7 +67,7 @@ public final class UsbSerialLib {
 	}
 	
 	public final void connectDevice(UsbDevice device) {
-		if(UsbSerialDevice.knownDevice(device)) {
+		if(UsbSerialDeviceFactory.knownDevice(device)) {
 			Log.d(TAG, String.format("Found a known device [0x%04x:0x%04x]", device.getVendorId(), device.getProductId()));
 			manager.requestPermission(device, permission_intent);
 		}
@@ -86,7 +86,7 @@ public final class UsbSerialLib {
 					if(intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
 						/* Permission has been granted */
 						if(device != null) {
-							UsbSerialDevice serial_device = UsbSerialDevice.createDevice(device);
+							UsbSerialDevice serial_device = UsbSerialDeviceFactory.createDevice(device);
 							if(serial_device != null) {
 								Log.d(TAG, String.format("Created new serial device: %s at %s", serial_device.getName(), device.getDeviceName()));
 								connected_devices.add(serial_device);
@@ -103,7 +103,7 @@ public final class UsbSerialLib {
 				}
 			} else if(UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
 				UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-				if(device != null && UsbSerialDevice.knownDevice(device)) {
+				if(device != null && UsbSerialDeviceFactory.knownDevice(device)) {
 					/* Ask for permission to use it */
 					Log.d(TAG, String.format("Device attached at %s", device.getDeviceName()));
 					manager.requestPermission(device, permission_intent);
