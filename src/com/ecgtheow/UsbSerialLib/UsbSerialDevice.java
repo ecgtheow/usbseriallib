@@ -13,16 +13,24 @@ public abstract class UsbSerialDevice implements Runnable {
 	private static final String TAG = "UsbSerialDevice";
 	
 	protected UsbDevice device = null;
+	protected UsbSerialDeviceDescriptor device_descriptor = null;
 	protected UsbDeviceConnection device_connection = null;
 	protected UsbInterface device_interface = null;
+	protected UsbEndpoint endpoint_in_int = null;
 	protected UsbEndpoint endpoint_in = null;
 	protected UsbEndpoint endpoint_out = null;
 	
+	protected BaudRate baudrate = BaudRate.Baud_9600;
+	protected DataBits databits = DataBits.Data_8;
+	protected Parity parity = Parity.None;
+	protected StopBits stopbits = StopBits.Stop_0;
+	
 	private boolean keep_running = true;
 	
-	public UsbSerialDevice(UsbDevice device) {
+	public UsbSerialDevice(UsbDevice device, UsbSerialDeviceDescriptor device_descriptor) {
 		Log.d(TAG, "Created device");
 		this.device = device;
+		this.device_descriptor = device_descriptor;
 	}
 	
 	public boolean connect(UsbManager manager)
@@ -44,18 +52,24 @@ public abstract class UsbSerialDevice implements Runnable {
 					
 					if(ep.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK) {
 						if(ep.getDirection() == UsbConstants.USB_DIR_OUT) {
+							Log.d(TAG, String.format("Got output endpoint %d for %s at %s", j, getName(), device.getDeviceName()));
 							endpoint_out = ep;
 						} else {
+							Log.d(TAG, String.format("Got input endpoint %d for %s at %s", j, getName(), device.getDeviceName()));
 							endpoint_in = ep;
 						}
+					} else if(ep.getType() == UsbConstants.USB_ENDPOINT_XFER_INT && ep.getDirection() == UsbConstants.USB_DIR_IN) {
+						Log.d(TAG, String.format("Got interrupt input endpoint %d for %s at %s", j, getName(), device.getDeviceName()));
+						endpoint_in_int = ep;
 					}
 				}
 				
-				if(endpoint_out == null || endpoint_in == null) {
-					/* Didn't get both endpoints, try the next interface */
-					Log.d(TAG, String.format("Didn't get both interfaces from iface %d for %s at %s", i, getName(), device.getDeviceName()));
+				if(endpoint_out == null || endpoint_in_int == null || endpoint_in == null) {
+					/* Didn't get all endpoints, try the next interface */
+					Log.d(TAG, String.format("Didn't get all endpoints from iface %d for %s at %s", i, getName(), device.getDeviceName()));
 					endpoint_out = null;
 					endpoint_in = null;
+					endpoint_in_int = null;
 					device_connection.releaseInterface(iface);
 				} else {
 					break;
@@ -66,7 +80,7 @@ public abstract class UsbSerialDevice implements Runnable {
 		}
 		
 		/* Tried all the interfaces, make sure we have the endpoints */
-		if(endpoint_out == null || endpoint_in == null) {
+		if(endpoint_out == null || endpoint_in_int == null || endpoint_in == null) {
 			device_connection.close();
 			return false;
 		}
@@ -74,7 +88,16 @@ public abstract class UsbSerialDevice implements Runnable {
 		Log.d(TAG, String.format("Claimed interface and found endpoints for %s at %s", getName(), device.getDeviceName()));
 		
 		/* Run the device-specific setup stuff */
-		return setup();
+		boolean ret = setup();
+		if(ret) {
+			try {
+			getConfig();
+			Log.d(TAG, String.format("Device configuration is: baud %s, databits %s, parity %s, stopbits %s", baudrate.toString(), databits.toString(), parity.toString(), stopbits.toString()));
+			} catch (Exception e) {
+	        	Log.e(TAG, "Exception thrown", e);
+			}
+		}
+		return ret;
 	}
 
 	public UsbDevice getDevice() {
@@ -101,5 +124,7 @@ public abstract class UsbSerialDevice implements Runnable {
 	}
 	
 	protected abstract boolean setup();
+	protected abstract void getConfig();
+	protected abstract void setConfig();
 	public abstract String getName();
 }
