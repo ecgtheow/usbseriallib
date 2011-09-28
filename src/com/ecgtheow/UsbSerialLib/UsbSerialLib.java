@@ -64,6 +64,10 @@ public final class UsbSerialLib {
 		}
 	}
 	
+	public final void disconnectDevice(UsbSerialDevice serial_device) {
+		serial_device.disconnect();
+	}
+	
 	private final BroadcastReceiver usb_receiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {

@@ -94,6 +94,7 @@ public abstract class UsbSerialDevice implements Runnable {
 		/* Tried all the interfaces, make sure we have the endpoints */
 		if(endpoint_out == null || endpoint_in == null) {
 			device_connection.close();
+			device_connection = null;
 			return false;
 		}
 		
@@ -112,6 +113,15 @@ public abstract class UsbSerialDevice implements Runnable {
 			Log.d(TAG, String.format("Device configuration is now: baud %s, databits %s, parity %s, stopbits %s", baudrate.toString(), databits.toString(), parity.toString(), stopbits.toString()));
 		}
 		return ret;
+	}
+	
+	public void disconnect() {
+		if(device_connection != null) {
+			stop();
+			takedown();
+			device_connection.releaseInterface(device_interface);
+			device_connection.close();
+		}
 	}
 
 	public UsbDevice getDevice() {
@@ -206,6 +216,7 @@ public abstract class UsbSerialDevice implements Runnable {
 	public abstract void setStopBits(StopBits bits);
 	
 	protected abstract boolean setup();
+	protected abstract void takedown();
 	protected abstract void getConfig();
 	public abstract String getName();
 }

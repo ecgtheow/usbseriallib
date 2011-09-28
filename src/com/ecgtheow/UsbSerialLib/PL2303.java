@@ -84,6 +84,11 @@ public class PL2303 extends UsbSerialDevice {
 	}
 
 	@Override
+	protected void takedown() {
+		/* Nothing to do */
+	}
+
+	@Override
 	protected void getConfig() {
 		byte[] buf = new byte[7];
 
