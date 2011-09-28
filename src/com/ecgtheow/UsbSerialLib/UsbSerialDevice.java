@@ -1,11 +1,15 @@
 package com.ecgtheow.UsbSerialLib;
 
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+
 import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
+import android.hardware.usb.UsbRequest;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -32,9 +36,7 @@ public abstract class UsbSerialDevice implements Runnable {
 	protected boolean keep_running = true;
 	protected Handler read_handler = new Handler() {
 		public void handleMessage(Message msg) {
-			Thread thr = Thread.currentThread();
 			byte[] buf = msg.getData().getByteArray("read_data");
-			Log.d(TAG, String.format("[%s] Read data [%c%c%c%c%c%c%c] from %s at %s", thr.getName(), buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], getName(), device.getDeviceName()));
 			read_event.onReadData(serial_device, buf);
 		}
 	};
@@ -125,31 +127,58 @@ public abstract class UsbSerialDevice implements Runnable {
 		keep_running = false;
 	}
 
+	/* Can't use UsbRequest.queue() here, as apparently no way to tell how many bytes were returned!!!
+	 * 
+	 * So have to poll in a thread instead.
+	 */
 	public void run() {
 		Thread thr = Thread.currentThread();
 		
 		Log.d(TAG, String.format("[%s] Running device %s", thr.getName(), getName()));
 		
+		// Undecided whether to use byte[] or ByteBuffer here, more testing needed!
+		byte[] read_buf = new byte[4096];
+		//ByteBuffer read_buf = ByteBuffer.allocate(4096);
+		
 		while(keep_running) {
-			Message msg = read_handler.obtainMessage();
-			Bundle bundle = new Bundle();
-			byte[] buf = new byte[7];
-			for(int i = 0; i < 7; i++) {
-				buf[i] = (byte)('A' + i);
-			}
-			bundle.putByteArray("read_data", buf);
-			msg.setData(bundle);
-			
-			read_handler.sendMessage(msg);
-			
 			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e) {
-				Log.d(TAG, "InterruptedException", e);
+				int bytes_read = device_connection.bulkTransfer(endpoint_in, read_buf, read_buf.length, 100);
+				//int bytes_read = device_connection.bulkTransfer(endpoint_in, read_buf.array(), 4096, 100);
+				if(bytes_read < 0) {
+					//Log.w(TAG, String.format("Bulk transfer failed on %s at %s: %d", getName(), device.getDeviceName(), bytes_read));
+				} else if(bytes_read > 0) {
+					Message msg = read_handler.obtainMessage();
+					Bundle bundle = new Bundle();
+					byte[] buf = Arrays.copyOf(read_buf, bytes_read);
+					//byte[] buf = Arrays.copyOf(read_buf.array(), bytes_read);
+					bundle.putByteArray("read_data", buf);
+					msg.setData(bundle);
+
+					read_handler.sendMessage(msg);
+				}
+
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					Log.d(TAG, "InterruptedException", e);
+				}
+			} catch (Exception e) {
+				Log.d(TAG, "Exception", e);
 			}
 		}
 		
 		Log.d(TAG, String.format("[%s] Stopped device %s", thr.getName(), getName()));
+	}
+	
+	public void write(byte[] buf) {
+		ByteBuffer send_buf = ByteBuffer.wrap(buf);
+		
+		UsbRequest req = new UsbRequest();
+		boolean ok = req.initialize(device_connection, endpoint_out);
+		if(ok) {
+			req.setClientData("Send data");
+			req.queue(send_buf, send_buf.capacity());
+		}
 	}
 	
 	public BaudRate getBaudRate() {
