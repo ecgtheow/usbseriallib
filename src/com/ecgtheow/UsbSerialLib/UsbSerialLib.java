@@ -15,9 +15,7 @@ import android.util.Log;
 
 public final class UsbSerialLib {
 	private static final String TAG = "UsbSerialLib";
-	
-	private static UsbSerialLib instance;
-	
+
 	private UsbManager manager;
 	private PendingIntent permission_intent;
 	private UsbDeviceConnectionEvent connection_event;
@@ -31,26 +29,17 @@ public final class UsbSerialLib {
 	 */
 	private static final String ACTION_USB_PERMISSION = "com.ecgtheow.UsbSerialLib.USB_PERMISSION";
 	
-	private UsbSerialLib() {
-	}
-	
-	public static synchronized UsbSerialLib getInstance(Context context, UsbDeviceConnectionEvent connection_event, UsbDeviceReadEvent read_event) {
-		if(instance == null) {
-			instance = new UsbSerialLib();
-			
-			instance.manager = (UsbManager)context.getSystemService(Context.USB_SERVICE);
-			instance.permission_intent = PendingIntent.getBroadcast(context, 0, new Intent(ACTION_USB_PERMISSION), 0);
-			instance.connection_event = connection_event;
-			instance.read_event = read_event;
-			
-			IntentFilter permission_filter = new IntentFilter();
-			permission_filter.addAction(ACTION_USB_PERMISSION);
-			permission_filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
-			permission_filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-			context.registerReceiver(instance.usb_receiver, permission_filter);
-		}
-		
-		return instance;
+	public UsbSerialLib(Context context, UsbDeviceConnectionEvent connection_event, UsbDeviceReadEvent read_event) {
+		manager = (UsbManager)context.getSystemService(Context.USB_SERVICE);
+		permission_intent = PendingIntent.getBroadcast(context, 0, new Intent(ACTION_USB_PERMISSION), 0);
+		this.connection_event = connection_event;
+		this.read_event = read_event;
+
+		IntentFilter permission_filter = new IntentFilter();
+		permission_filter.addAction(ACTION_USB_PERMISSION);
+		permission_filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+		permission_filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+		context.registerReceiver(usb_receiver, permission_filter);
 	}
 	
 	public final int connectDevices() {
