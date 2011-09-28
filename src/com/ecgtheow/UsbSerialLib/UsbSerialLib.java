@@ -21,6 +21,7 @@ public final class UsbSerialLib {
 	private UsbManager manager;
 	private PendingIntent permission_intent;
 	private UsbDeviceConnectionEvent connection_event;
+	private UsbDeviceReadEvent read_event;
 	private ArrayList<UsbSerialDevice> connected_devices = new ArrayList<UsbSerialDevice>();
 	
 	/* See http://developer.android.com/guide/topics/usb/host.html
@@ -33,13 +34,14 @@ public final class UsbSerialLib {
 	private UsbSerialLib() {
 	}
 	
-	public static synchronized UsbSerialLib getInstance(Context context, UsbDeviceConnectionEvent connection_event) {
+	public static synchronized UsbSerialLib getInstance(Context context, UsbDeviceConnectionEvent connection_event, UsbDeviceReadEvent read_event) {
 		if(instance == null) {
 			instance = new UsbSerialLib();
 			
 			instance.manager = (UsbManager)context.getSystemService(Context.USB_SERVICE);
 			instance.permission_intent = PendingIntent.getBroadcast(context, 0, new Intent(ACTION_USB_PERMISSION), 0);
 			instance.connection_event = connection_event;
+			instance.read_event = read_event;
 			
 			IntentFilter permission_filter = new IntentFilter();
 			permission_filter.addAction(ACTION_USB_PERMISSION);
@@ -86,7 +88,7 @@ public final class UsbSerialLib {
 					if(intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
 						/* Permission has been granted */
 						if(device != null) {
-							UsbSerialDevice serial_device = UsbSerialDeviceFactory.createDevice(device);
+							UsbSerialDevice serial_device = UsbSerialDeviceFactory.createDevice(device, read_event);
 							if(serial_device != null) {
 								Log.d(TAG, String.format("Created new serial device: %s at %s", serial_device.getName(), device.getDeviceName()));
 								
@@ -120,6 +122,7 @@ public final class UsbSerialLib {
 					/* clean up */
 					for(UsbSerialDevice serial_device : connected_devices) {
 						if(device.equals(serial_device.getDevice())) {
+							serial_device.stop();
 							if (connected_devices.remove(serial_device)) {
 								Log.d(TAG, String.format("Removed: %s at %s", serial_device.getName(), device.getDeviceName()));
 							}

@@ -6,8 +6,8 @@ import android.util.Log;
 public class CP210x extends UsbSerialDevice {
 	private static final String TAG = "CP210x";
 
-	public CP210x(UsbDevice device, UsbSerialDeviceDescriptor device_descriptor) {
-		super(device, device_descriptor);
+	public CP210x(UsbDevice device, UsbSerialDeviceDescriptor device_descriptor, UsbDeviceReadEvent read_event) {
+		super(device, device_descriptor, read_event);
 	}
 
 	@Override
@@ -22,7 +22,19 @@ public class CP210x extends UsbSerialDevice {
 	}
 
 	@Override
-	protected void setConfig() {
+	public void setBaudRate(BaudRate rate) {
+	}
+
+	@Override
+	public void setDataBits(DataBits bits) {
+	}
+
+	@Override
+	public void setParity(Parity par) {
+	}
+
+	@Override
+	public void setStopBits(StopBits bits) {
 	}
 
 	@Override

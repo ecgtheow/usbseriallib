@@ -17,11 +17,11 @@ public class UsbSerialDeviceFactory {
 		add(new CP210xDescriptor());
 	}};
 	
-	public static UsbSerialDevice createDevice(UsbDevice device) {
+	public static UsbSerialDevice createDevice(UsbDevice device, UsbDeviceReadEvent read_event) {
 		for(UsbSerialDeviceDescriptor driver_descriptor : devices) {
 			if(driver_descriptor.knownDevice(device.getVendorId(), device.getProductId())) {
 				try {
-					UsbSerialDevice driver = driver_descriptor.driverClass().getConstructor(UsbDevice.class, UsbSerialDeviceDescriptor.class).newInstance(device, driver_descriptor);
+					UsbSerialDevice driver = driver_descriptor.driverClass().getConstructor(UsbDevice.class, UsbSerialDeviceDescriptor.class, UsbDeviceReadEvent.class).newInstance(device, driver_descriptor, read_event);
 					return driver;
 				} catch (InstantiationException e) {
 					Log.d(TAG, "Exception thrown", e);
