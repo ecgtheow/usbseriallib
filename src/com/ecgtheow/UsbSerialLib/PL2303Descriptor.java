@@ -72,6 +72,68 @@ public class PL2303Descriptor extends UsbSerialDeviceDescriptor {
 	}
 
 	@Override
+	public BaudRate quantise_baudrate(int rate) {
+		BaudRate ret;
+		
+		if(rate < 150) {
+			ret = BaudRate.Baud_75;
+		} else if(rate < 300) {
+			ret = BaudRate.Baud_150;
+		} else if(rate < 600) {
+			ret = BaudRate.Baud_300;
+		} else if(rate < 1200) {
+			ret = BaudRate.Baud_600;
+		} else if(rate < 1800) {
+			ret = BaudRate.Baud_1200;
+		} else if(rate < 2400) {
+			ret = BaudRate.Baud_1800;
+		} else if(rate < 3600) {
+			ret = BaudRate.Baud_2400;
+		} else if(rate < 4800) {
+			ret = BaudRate.Baud_3600;
+		} else if(rate < 7200) {
+			ret = BaudRate.Baud_4800;
+		} else if(rate < 9600) {
+			ret = BaudRate.Baud_7200;
+		} else if(rate < 14400) {
+			ret = BaudRate.Baud_9600;
+		} else if(rate < 19200) {
+			ret = BaudRate.Baud_14400;
+		} else if(rate < 28800) {
+			ret = BaudRate.Baud_19200;
+		} else if(rate < 38400) {
+			ret = BaudRate.Baud_28800;
+		} else if(rate < 57600) {
+			ret = BaudRate.Baud_38400;
+		} else if(rate < 115200) {
+			ret = BaudRate.Baud_57600;
+		} else if(rate < 230400) {
+			ret = BaudRate.Baud_115200;
+		} else if(rate < 460800) {
+			ret = BaudRate.Baud_230400;
+		} else if(rate < 614400) {
+			ret = BaudRate.Baud_460800;
+		} else if(rate < 921600) {
+			ret = BaudRate.Baud_614400;
+		} else if(rate < 1228800) {
+			ret = BaudRate.Baud_921600;
+		} else if(rate < 2457600) {
+			ret = BaudRate.Baud_1228800;
+		} else if(rate < 3000000) {
+			ret = BaudRate.Baud_2457600;
+		} else if(rate < 6000000) {
+			ret = BaudRate.Baud_3000000;
+		} else {
+			/* HX rev D can do 12000000 too, maybe return it here if we can tell
+			 * its a rev D chip somehow
+			 */
+			ret = BaudRate.Baud_6000000;
+		}
+		
+		return ret;
+	}
+
+	@Override
 	public Class<? extends UsbSerialDevice> driverClass() {
 		return PL2303.class;
 	}

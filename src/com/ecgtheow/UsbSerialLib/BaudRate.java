@@ -6,11 +6,14 @@ import java.util.Map;
 
 public enum BaudRate {
 	Baud_0 (0),
+	Baud_75 (75),
+	Baud_150 (150),
 	Baud_300 (300),
 	Baud_600 (600),
 	Baud_1200 (1200),
 	Baud_1800 (1800),
 	Baud_2400 (2400),
+	Baud_3600 (3600),
 	Baud_4000 (4000),
 	Baud_4800 (4800),
 	Baud_7200 (7200),
@@ -34,10 +37,15 @@ public enum BaudRate {
 	Baud_460800 (460800),
 	Baud_500000 (500000),
 	Baud_576000 (576000),
+	Baud_614400 (614400),
 	Baud_921600 (921600),
 	Baud_1228800 (1228800),
 	Baud_1843200 (1843200),
-	Baud_3686400 (3686400);
+	Baud_2457600 (2457600),
+	Baud_3000000 (3000000),
+	Baud_3686400 (3686400),
+	Baud_6000000 (6000000),
+	Baud_12000000 (12000000);
 	
 	private static final Map<Integer,BaudRate> lookup = new HashMap<Integer,BaudRate>();
 	
@@ -59,84 +67,5 @@ public enum BaudRate {
 	
 	public static BaudRate get(int rate) {
 		return lookup.get(rate);
-	}
-	
-	/* Per CP210x AN205 Table 1 http://www.silabs.com/Support%20Documents/TechnicalDocs/an205.pdf
-	 * 
-	 * Added to the BaudRate enum as it's a generally useful conversion from any integer to a
-	 * baud rate value.
-	 */
-	public final static BaudRate quantise(int rate) {
-		BaudRate ret;
-		
-		if(rate <= 56) {
-			ret = BaudRate.Baud_0;
-		} else if(rate <= 300) {
-			ret = BaudRate.Baud_300;
-		} else if(rate <= 600) {
-			ret = BaudRate.Baud_600;
-		} else if(rate <= 1200) {
-			ret = BaudRate.Baud_1200;
-		} else if(rate <= 1800) {
-			ret = BaudRate.Baud_1800;
-		} else if(rate <= 2400) {
-			ret = BaudRate.Baud_2400;
-		} else if(rate <= 4000) {
-			ret = BaudRate.Baud_4000;
-		} else if(rate <= 4803) {
-			ret = BaudRate.Baud_4800;
-		} else if(rate <= 7207) {
-			ret = BaudRate.Baud_7200;
-		} else if(rate <= 9612) {
-			ret = BaudRate.Baud_9600;
-		} else if(rate <= 14428) {
-			ret = BaudRate.Baud_14400;
-		} else if(rate <= 16062) {
-			ret = BaudRate.Baud_16000;
-		} else if(rate <= 19250) {
-			ret = BaudRate.Baud_19200;
-		} else if(rate <= 28912) {
-			ret = BaudRate.Baud_28800;
-		} else if(rate <= 38601) {
-			ret = BaudRate.Baud_38400;
-		} else if(rate <= 51558) {
-			ret = BaudRate.Baud_51200;
-		} else if(rate <= 56280) {
-			ret = BaudRate.Baud_56000;
-		} else if(rate <= 58053) {
-			ret = BaudRate.Baud_57600;
-		} else if(rate <= 64111) {
-			ret = BaudRate.Baud_64000;
-		} else if(rate <= 77608) {
-			ret = BaudRate.Baud_76800;
-		} else if(rate <= 117028) {
-			ret = BaudRate.Baud_115200;
-		} else if(rate <= 129347) {
-			ret = BaudRate.Baud_128000;
-		} else if(rate <= 156868) {
-			ret = BaudRate.Baud_153600;
-		} else if(rate <= 237832) {
-			ret = BaudRate.Baud_230400;
-		} else if(rate <= 254234) {
-			ret = BaudRate.Baud_250000;
-		} else if(rate <= 273066) {
-			ret = BaudRate.Baud_256000;
-		} else if(rate <= 491520) {
-			ret = BaudRate.Baud_460800;
-		} else if(rate <= 567138) {
-			ret = BaudRate.Baud_500000;
-		} else if(rate <= 670254) {
-			ret = BaudRate.Baud_576000;
-		} else if(rate <= 1053257) {
-			ret = BaudRate.Baud_921600;
-		} else if(rate <= 1474560) {
-			ret = BaudRate.Baud_1228800;
-		} else if(rate <= 2457600) {
-			ret = BaudRate.Baud_1843200;
-		} else {
-			ret = BaudRate.Baud_3686400;
-		}
-		
-		return ret;
 	}
 }
