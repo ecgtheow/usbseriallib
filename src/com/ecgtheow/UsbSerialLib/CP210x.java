@@ -11,8 +11,10 @@ public class CP210x extends UsbSerialDevice {
 	}
 
 	@Override
-	protected void setup() {
+	protected boolean setup() {
 		Log.d(TAG, String.format("Setting up device %s at %s", getName(), device.getDeviceName()));
+		
+		return false;
 	}
 	
 	@Override

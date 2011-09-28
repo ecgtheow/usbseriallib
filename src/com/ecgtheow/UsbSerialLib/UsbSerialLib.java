@@ -89,9 +89,15 @@ public final class UsbSerialLib {
 							UsbSerialDevice serial_device = UsbSerialDeviceFactory.createDevice(device);
 							if(serial_device != null) {
 								Log.d(TAG, String.format("Created new serial device: %s at %s", serial_device.getName(), device.getDeviceName()));
-								connected_devices.add(serial_device);
 								
-								connection_event.onUsbDeviceConnected(serial_device);
+								if(serial_device.connect(manager)) {
+									Log.d(TAG, String.format("Connected serial device: %s at %s", serial_device.getName(), device.getDeviceName()));
+									connected_devices.add(serial_device);
+									
+									connection_event.onUsbDeviceConnected(serial_device);
+									
+									serial_device.start();
+								}
 							} else {
 								Log.d(TAG, String.format("Failed to create serial device for %s", device.getDeviceName()));
 							}
