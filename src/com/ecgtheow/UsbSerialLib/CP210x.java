@@ -67,6 +67,8 @@ public class CP210x extends UsbSerialDevice {
 
 	@Override
 	protected void takedown() {
+		Log.d(TAG, String.format("Taking down device %s at %s", getName(), device.getDeviceName()));
+		
 		vendorWriteSingle(IFC_ENABLE, UART_DISABLE);
 	}
 
@@ -194,6 +196,7 @@ public class CP210x extends UsbSerialDevice {
 			buf[1] = 8;
 		}
 		
+		Log.d(TAG, String.format("Writing line ctl bytes 0x%02x 0x%02x", (int)buf[0], (int)buf[1]));
 		vendorWrite(SET_LINE_CTL, buf);
 		
 		databits = bits;
@@ -211,17 +214,18 @@ public class CP210x extends UsbSerialDevice {
 		vendorRead(GET_LINE_CTL, buf);
 		Log.d(TAG, String.format("Read line ctl bytes 0x%02x 0x%02x", (int)buf[0], (int)buf[1]));
 		
-		buf[0] &= 0x0F;
+		buf[0] &= ~0xF0;
 		if(par == Parity.Odd){
-			buf[0] &= (1 << 4);
+			buf[0] |= (1 << 4);
 		} else if(par == Parity.Even) {
-			buf[0] &= (2 << 4);
+			buf[0] |= (2 << 4);
 		} else if(par == Parity.Mark) {
-			buf[0] &= (3 << 4);
+			buf[0] |= (3 << 4);
 		} else if(par == Parity.Space) {
-			buf[0] &= (4 << 4);
+			buf[0] |= (4 << 4);
 		}
 		
+		Log.d(TAG, String.format("Writing line ctl bytes 0x%02x 0x%02x", (int)buf[0], (int)buf[1]));
 		vendorWrite(SET_LINE_CTL, buf);
 		
 		parity = par;
@@ -239,13 +243,14 @@ public class CP210x extends UsbSerialDevice {
 		vendorRead(GET_LINE_CTL, buf);
 		Log.d(TAG, String.format("Read line ctl bytes 0x%02x 0x%02x", (int)buf[0], (int)buf[1]));
 		
-		buf[0] &= 0xF0;
+		buf[0] &= ~0x0F;
 		if(bits == StopBits.Stop_1_5) {
-			buf[0] &= 1;
+			buf[0] |= 1;
 		} else if(bits == StopBits.Stop_2) {
-			buf[0] &= 2;
+			buf[0] |= 2;
 		}
 		
+		Log.d(TAG, String.format("Writing line ctl bytes 0x%02x 0x%02x", (int)buf[0], (int)buf[1]));
 		vendorWrite(SET_LINE_CTL, buf);
 		
 		stopbits = bits;
@@ -262,7 +267,16 @@ public class CP210x extends UsbSerialDevice {
 	}
 	
 	private int vendorWrite(int request, byte[] buf) {
-		return device_connection.controlTransfer(HOST_TO_DEVICE_REQUEST_TYPE, request, 0, 0, buf, buf.length, 300);
+		if(buf.length > 2) {
+			return device_connection.controlTransfer(HOST_TO_DEVICE_REQUEST_TYPE, request, 0, 0, buf, buf.length, 300);
+		} else {
+			int value = ((int)buf[0] & 0xff) +
+					(((int)buf[1] << 8) & 0xff00);
+			
+			Log.d(TAG, String.format("Using direct write, value 0x%04x", value));
+			
+			return vendorWriteSingle(request, value);
+		}
 	}
 	
 	private int vendorWriteSingle(int request, int value) {
