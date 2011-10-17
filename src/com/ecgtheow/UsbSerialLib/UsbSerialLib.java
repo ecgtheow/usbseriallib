@@ -34,12 +34,22 @@ public final class UsbSerialLib {
 		permission_intent = PendingIntent.getBroadcast(context, 0, new Intent(ACTION_USB_PERMISSION), 0);
 		this.connection_event = connection_event;
 		this.read_event = read_event;
+	}
 
+	public void registerReceiver(Context context) {
+		Log.d(TAG, "Registering USB receiver");
+		
 		IntentFilter permission_filter = new IntentFilter();
 		permission_filter.addAction(ACTION_USB_PERMISSION);
 		permission_filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
 		permission_filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
 		context.registerReceiver(usb_receiver, permission_filter);
+	}
+	
+	public void unregisterReceiver(Context context) {
+		Log.d(TAG, "Unregistering USB receiver");
+		
+		context.unregisterReceiver(usb_receiver);
 	}
 	
 	public final int connectDevices() {
