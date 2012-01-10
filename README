@@ -1,0 +1,8 @@
+
+USB Serial Lib
+==============
+
+
+This is a host-mode USB serial driver for Android Honeycomb and newer.  It
+contains userspace drivers for CP210x- and PL2303-based chipsets.
+
